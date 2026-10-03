@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+lib/
+
+# Compilation artifacts Solidity
+out/
+cache/
+artifacts/
+broadcast/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Private keys
+*.key
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# TypeScript
+dist/
+*.tsbuildinfo
+
+# Test data
+test-data/
+
+# Foundry
+foundry.toml.bak
