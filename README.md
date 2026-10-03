@@ -60,4 +60,14 @@ cp .env.example .env
 # Start the bot
 npm run start
 
+📊 Project Stats
+140+ clones in the first 2 weeks
+83 unique developers exploring the code
+Found live 0.57% spread during testing
+📜 Documentation
+For detailed deployment instructions, environment setup, and local testing, see DEPLOYMENT.md.
+Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+📄 License
+This project is licensed under the MIT License.
 
