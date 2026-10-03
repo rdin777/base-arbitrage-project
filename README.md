@@ -48,3 +48,16 @@ forge test
 
 # Run local fork (requires internet)
 anvil --fork-url https://mainnet.base.org
+
+
+### 2. Arbitrage Bot
+cd bot
+npm install
+
+# Create .env file (see DEPLOYMENT.md)
+cp .env.example .env
+
+# Start the bot
+npm run start
+
+
