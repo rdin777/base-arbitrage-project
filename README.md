@@ -16,6 +16,8 @@ If you appreciate the work and want to support further security research:
 <img src="465.PNG" alt="Donate QR" width="200"/>
 **Solana:**8RpjaJQmCrRvKHMXA5ak4CrrLNJnJionwxMfTRG8YAS
 
+> 📖 **Read the full development journey:** [Building an Atomic Arbitrage Bot on Base: From Zero to Live Trading](https://dev.to/rdin777/building-an-atomic-arbitrage-bot-on-base-from-zero-to-live-trading-2849)
+
 
 # 🚀 Base Arbitrage Project
 
