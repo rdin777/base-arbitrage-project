@@ -8,14 +8,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract ArbitrageExecutorTest is Test {
     ArbitrageExecutor public executor;
     
-    // Тестовые адреса
+    // Test addresses
     address public owner = address(0x1);
     address public uniswapRouter = address(0x2);
     address public aerodromeRouter = address(0x3);
     address public flashLoanPool = address(0x4);
     
     function setUp() public {
-        // Деплоим контракт перед каждым тестом
+        // Deploy the contract before each test.
         vm.prank(owner);
         executor = new ArbitrageExecutor(
             uniswapRouter,
@@ -25,7 +25,7 @@ contract ArbitrageExecutorTest is Test {
         );
     }
     
-    // Тест 1: Проверка деплоя
+    // Test 1: Deployment check
     function test_Deployment() public view {
         assertEq(executor.owner(), owner, "Owner should be deployer");
         assertEq(executor.uniswapRouter(), uniswapRouter, "Uniswap router should be set");
@@ -34,7 +34,7 @@ contract ArbitrageExecutorTest is Test {
         assertEq(executor.minProfit(), 1 ether, "Min profit should be 1 ETH");
     }
     
-    // Тест 2: Изменение minProfit
+    // Test 2: Changing minProfit
     function test_SetMinProfit() public {
         uint256 newMinProfit = 2 ether;
         
@@ -44,7 +44,7 @@ contract ArbitrageExecutorTest is Test {
         assertEq(executor.minProfit(), newMinProfit, "Min profit should be updated");
     }
     
-    // Тест 3: Только владелец может менять minProfit
+    // Test 3: Only the owner can change minProfit.
     function test_RevertIf_NotOwnerSetMinProfit() public {
     address attacker = address(0x999);
     
@@ -58,7 +58,7 @@ contract ArbitrageExecutorTest is Test {
     executor.setMinProfit(2 ether);
 }
     
-    // Тест 4: Изменение роутеров
+    // Test 4: Changing routers
     function test_SetRouters() public {
         address newUniswap = address(0x5);
         address newAerodrome = address(0x6);
@@ -70,7 +70,7 @@ contract ArbitrageExecutorTest is Test {
         assertEq(executor.aerodromeRouter(), newAerodrome, "Aerodrome router should be updated");
     }
     
-    // Тест 5: Нельзя установить нулевой адрес роутера
+    // Test 5: Cannot set the router address to zero.
     function test_RevertIf_ZeroAddressRouter() public {
         vm.prank(owner);
         vm.expectRevert("Invalid uniswap router");
@@ -81,17 +81,17 @@ contract ArbitrageExecutorTest is Test {
         executor.setRouters(address(0x5), address(0));
     }
     
-    // Тест 6: Проверка баланса токенов
+    // Test 6: Token balance check
     function test_GetTokenBalance() public {
-        // Создаём мок токен
+        // Create a mock token
         MockToken token = new MockToken();
         
-        // Проверяем начальный баланс (должен быть 0)
+        // Check the initial balance (it should be 0).
         assertEq(executor.getTokenBalance(address(token)), 0, "Initial balance should be 0");
     }
 }
 
-// Мок токен для тестирования
+// Mock token for testing
 contract MockToken {
     mapping(address => uint256) public balanceOf;
     
