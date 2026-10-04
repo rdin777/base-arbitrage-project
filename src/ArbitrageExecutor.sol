@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// Интерфейс для флеш-лоанов (стандарт EIP-3156)
+// Interface for flash loans (EIP-3156 standard)
 interface IERC3156FlashBorrower {
     function onFlashLoan(
         address initiator,
@@ -27,7 +27,7 @@ interface IERC3156FlashLender {
     ) external returns (bool);
 }
 
-// Интерфейс Uniswap V3 Router для свопов
+// Uniswap V3 Router interface for swaps
 interface ISwapRouter {
     struct ExactInputSingleParams {
         address tokenIn;
@@ -45,18 +45,18 @@ interface ISwapRouter {
 contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
     using SafeERC20 for IERC20;
 
-    // Адреса роутеров и пула для флеш-лоанов
+    // Router and pool addresses for flash loans
     address public uniswapRouter;
     address public aerodromeRouter;
     address public flashLoanPool;
     
-    // Минимальная прибыль для исполнения (в wei)
+    // Minimum profit for execution (in wei)
     uint256 public minProfit;
     
-    // Баланс владельца (накопленная прибыль от арбитража)
+    // Owner's balance (accumulated profit from arbitrage)
     mapping(address => uint256) public balances;
 
-    // === СОБЫТИЯ ===
+    // === EVENTS ===
     event ArbitrageExecuted(
         address indexed tokenBorrowed,
         uint256 amountBorrowed,
@@ -96,7 +96,7 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
         minProfit = _minProfit;
     }
 
-    // === ФУНКЦИЯ ФЛЕШ-ЛОНА (вызывается пулом после перевода токенов) ===
+    // === FLASH LOAN FUNCTION (called by the pool after token transfer) ===
     function onFlashLoan(
         address initiator,
         address token,
@@ -104,10 +104,10 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
         uint256 fee,
         bytes calldata data
     ) external override returns (bytes32) {
-        // Проверка: только наш контракт может инициировать флеш-лоан
+        // Check: only our contract can initiate a flash loan.
         require(initiator == address(this), "Unauthorized initiator");
         
-        // Декодируем параметры арбитража
+        // Decoding arbitrage parameters
         (
             address tokenIn,
             address tokenOut,
@@ -116,15 +116,15 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
             uint256 amountOutMinimum
         ) = abi.decode(data, (address, address, uint24, uint24, uint256));
         
-        // Разрешаем роутерам тратить токены
+        // Allowing routers to spend tokens
         IERC20(token).forceApprove(uniswapRouter, amount);
         IERC20(token).forceApprove(aerodromeRouter, amount);
         
-        // Проверяем баланс до свопов
+        // Checking the balance before swaps.
         uint256 balanceBefore = IERC20(token).balanceOf(address(this));
         require(balanceBefore >= amount + fee, "Insufficient balance for flash loan repayment");
         
-        // СВОП 1: Покупаем tokenOut на Uniswap (дешевле)
+        // SWAP 1: Buy tokenOut on Uniswap (cheaper)
         uint256 amountOut1 = ISwapRouter(uniswapRouter).exactInputSingle(
             ISwapRouter.ExactInputSingleParams({
                 tokenIn: tokenIn,
@@ -138,13 +138,13 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
             })
         );
         
-        // Получаем количество tokenOut после первого свопа
+        // We obtain the amount of tokenOut after the first swap.
         uint256 tokenOutAmount = IERC20(tokenOut).balanceOf(address(this));
         
-        // Разрешаем Aerodrome тратить tokenOut
+        // Allow Aerodrome to spend tokenOut.
         IERC20(tokenOut).forceApprove(aerodromeRouter, tokenOutAmount);
         
-        // СВОП 2: Продаем tokenOut на Aerodrome (дороже), получаем обратно tokenIn
+        // SWAP 2: Sell tokenOut on Aerodrome (at a higher price), receive tokenIn in return.
         uint256 amountOut2 = ISwapRouter(aerodromeRouter).exactInputSingle(
             ISwapRouter.ExactInputSingleParams({
                 tokenIn: tokenOut,
@@ -158,17 +158,17 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
             })
         );
         
-        // Проверяем баланс после свопов
+        // Checking the balance after swaps
         uint256 balanceAfter = IERC20(token).balanceOf(address(this));
         
-        // Считаем прибыль
+        // Calculating profit
         uint256 profit = balanceAfter - (amount + fee);
         require(profit >= minProfit, "Insufficient profit");
         
-        // Записываем прибыль на баланс владельца (effects)
+        // We record the profit on the owner's balance sheet (effects)
         balances[token] += profit;
 
-        // Возвращаем флеш-лоан с комиссией (interactions)
+        // Repaying the flash loan with the fee (interactions)
         IERC20(token).safeTransfer(flashLoanPool, amount + fee);
 
         emit ArbitrageExecuted(token, amount, profit, amountOut1, amountOut2);
@@ -176,7 +176,7 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
         return keccak256("ERC3156FlashBorrower.onFlashLoan");
     }
 
-    // === ПУБЛИЧНАЯ ФУНКЦИЯ ДЛЯ ЗАПУСКА АРБИТРАЖА ===
+    // === Public function to launch arbitrage ===
     function executeArbitrage(
         address tokenBorrow,
         uint256 amount,
@@ -185,16 +185,16 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
         uint24 fee1,
         uint24 fee2
     ) external onlyOwner {
-        // Кодируем параметры для флеш-лоана
+        // Encoding parameters for a flash loan
         bytes memory data = abi.encode(
             tokenIn,
             tokenOut,
             fee1,
             fee2,
-            0 // amountOutMinimum будет проверен внутри onFlashLoan
+            0 // amountOutMinimum will be checked inside onFlashLoan
         );
         
-        // Берем флеш-лоан и проверяем результат
+        // We take out a flash loan and check the result.
         bool success = IERC3156FlashLender(flashLoanPool).flashLoan(
             this,
             tokenBorrow,
@@ -204,7 +204,7 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
         require(success, "Flash loan failed");
     }
 
-    // === ВЫВОД ПРИБЫЛИ ===
+    // === PROFIT WITHDRAWAL ===
     function withdraw(address token, address to, uint256 amount) external onlyOwner {
         require(to != address(0), "Invalid recipient");
         require(balances[token] >= amount, "Insufficient balance");
@@ -213,7 +213,7 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
         emit FundsWithdrawn(token, to, amount);
     }
 
-    // === УПРАВЛЕНИЕ ===
+    // === CONTROL ===
     function setMinProfit(uint256 _minProfit) external onlyOwner {
         uint256 oldMinProfit = minProfit;
         minProfit = _minProfit;
@@ -231,7 +231,7 @@ contract ArbitrageExecutor is IERC3156FlashBorrower, Ownable {
         emit RoutersUpdated(oldUniswap, oldAerodrome, _uniswap, _aerodrome);
     }
 
-    // Получение баланса контракта (для отладки)
+    // Retrieving the contract balance (for debugging)
     function getTokenBalance(address token) external view returns (uint256) {
         return IERC20(token).balanceOf(address(this));
     }
