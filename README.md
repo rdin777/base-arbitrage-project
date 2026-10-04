@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 *If this research helped you, please consider giving it a ⭐ Star.*
 
 ## 🚀 Stay Updated
@@ -19,6 +20,8 @@ If you appreciate the work and want to support further security research:
 > 📖 **Read the full development journey:** [Building an Atomic Arbitrage Bot on Base: From Zero to Live Trading](https://dev.to/rdin777/building-an-atomic-arbitrage-bot-on-base-from-zero-to-live-trading-2849)
 
 
+=======
+>>>>>>> Stashed changes
 # 🚀 Base Arbitrage Project
 
 Real-time DEX arbitrage detector + atomic execution smart contract on Base L2.
@@ -69,6 +72,7 @@ forge test
 
 # Run local fork (requires internet)
 anvil --fork-url https://mainnet.base.org
+<<<<<<< Updated upstream
 
 
 ### 2. Arbitrage Bot
@@ -92,3 +96,5 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 📄 License
 This project is licensed under the MIT License.
 
+=======
+>>>>>>> Stashed changes
