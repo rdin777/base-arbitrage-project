@@ -55,6 +55,10 @@ Lightweight TypeScript bot that monitors Uniswap V3 and Aerodrome pools on Base,
 
 ## 🚀 Quick Start
 
+### 2. Arbitrage Bot (`bot/`)
+The TypeScript bot that detects opportunities and triggers the contract.
+[See bot documentation](./bot/README.md)
+
 ### Prerequisites
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) installed
 - Node.js 18+ and npm
